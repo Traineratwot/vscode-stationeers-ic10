@@ -1,4 +1,52 @@
 const fs = require("fs");
+var callerId = require('caller-id');
+class ic10Error {
+    constructor(caller, code, message, obj, lvl = 0) {
+        this.message = message;
+        this.code = code;
+        this.obj = obj;
+        this.lvl = lvl;
+        this.className = caller?.typeName ?? '';
+        this.functionName = caller?.functionName ?? caller?.methodName ?? '';
+        this.line = caller?.lineNumber ?? 0;
+    }
+    getCode() {
+        return this.code;
+    }
+    getMessage() {
+        return this.message;
+    }
+}
+var Execution = {
+    error(code, message, obj) {
+        var caller = callerId.getData();
+        return new ic10Error(caller, code, message, obj, 0);
+    },
+    display: function (e) {
+        if (e instanceof ic10Error) {
+            var string = `[${e.functionName}:${e.line}] (${e.code}) - ${e.message}`;
+            switch (e.lvl) {
+                case 0:
+                    console.error(string, e.obj);
+                    break;
+                case 1:
+                    console.warn(string, e.obj);
+                    break;
+                case 2:
+                    console.info(string, e.obj);
+                    break;
+                case 3:
+                default:
+                    console.log(string, e.obj);
+                    break;
+                    return null;
+            }
+        }
+        else {
+            console.log(e);
+        }
+    }
+};
 class Environ {
     constructor() {
         this.d0 = new Device();
@@ -30,13 +78,13 @@ class Memory {
             let m = regex.exec(cell);
             console.log(m);
             if (m === null)
-                throw `46 Unknown cell: ${cell}`;
+                throw Execution.error(0, 'Unknown cell', cell);
             if (val === null)
                 return this.cells[m[1]];
         }
         if (typeof cell === "number") {
             if (cell >= 18)
-                throw `Memory:cell Unknown cell: ${cell}`;
+                throw Execution.error(0, 'Unknown cell', cell);
             if (val === null)
                 return this.cells[cell];
         }
@@ -150,7 +198,7 @@ class Device {
             return this[variable];
         }
         else {
-            throw `4 Unknown variable ${variable}`;
+            throw Execution.error(0, 'Unknown variable', variable);
         }
     }
     set(variable, value) {
@@ -158,7 +206,7 @@ class Device {
             this[variable] = value;
         }
         else {
-            throw `1 Unknown variable ${variable}`;
+            throw Execution.error(0, 'Unknown variable', variable);
         }
     }
 }
@@ -241,7 +289,7 @@ class InterpreterIc10 {
             }
         }
         catch (e) {
-            this.__debug(e);
+            Execution.display(e);
         }
         this.position++;
         return isComment && this.position < this.commands.length
@@ -271,7 +319,7 @@ class InterpreterIc10 {
             return this.variables[x];
         }
         else {
-            throw `__getPort Unknown port ${x}`;
+            throw Execution.error(0, 'Unknown port', x);
         }
     }
     __getVar(x) {
@@ -282,7 +330,7 @@ class InterpreterIc10 {
             return this.constants[x].get();
         }
         else {
-            throw `__getVar Undefined Variable ${x}`;
+            throw Execution.error(0, 'Undefined Variable', x);
         }
     }
     __setVar(x, value) {
@@ -290,7 +338,7 @@ class InterpreterIc10 {
             this.variables[x].set(value);
         }
         else {
-            throw `__setVar Undefined Variable ${x}`;
+            throw Execution.error(0, 'Undefined Variable', x);
         }
     }
     __jump(x) {
@@ -298,7 +346,7 @@ class InterpreterIc10 {
             this.position = this.labels[x] - 1;
         }
         else {
-            throw `__jump Undefined label ${x}`;
+            throw Execution.error(0, ' Undefined label', x);
         }
     }
     __ajump(x) {
@@ -320,7 +368,7 @@ class InterpreterIc10 {
             this.variables[op2] = this.environ[op2];
         }
         else {
-            throw `3 Unknown Register ${op2}`;
+            throw Execution.error(0, 'Unknown Register', op2);
         }
     }
     l(op1, op2, op3, op4) {
@@ -576,8 +624,10 @@ class InterpreterIc10 {
             this.__jump(op2);
         }
     }
-    yield(op1, op2, op3, op4) { }
-    sleep(op1, op2, op3, op4) { }
+    yield(op1, op2, op3, op4) {
+    }
+    sleep(op1, op2, op3, op4) {
+    }
     j(op1, op2, op3, op4) {
         this.__jump(op1);
     }

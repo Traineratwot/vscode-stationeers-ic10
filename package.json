@@ -90,6 +90,7 @@
 		]
 	},
 	"dependencies": {
+		"caller-id": "^0.1.0",
 		"generator-build": "^1.0.0"
 	},
 	"__metadata": {
