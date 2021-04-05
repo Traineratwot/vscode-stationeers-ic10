@@ -98,7 +98,6 @@ class Memory {
 		for (let i = 0; i < 15; i++) {
 			this.cells[i] = new MemoryCell()
 		}
-		
 		// console.log(this.cell("r1"))
 		// console.log(this.cell(0))
 		// console.log(this.cell("r23"))
@@ -110,7 +109,6 @@ class Memory {
 			let m = regex.exec(cell)
 			console.log(m)
 			if (m === null) throw Execution.error(0, 'Unknown cell', cell)
-			
 			if (val === null) return this.cells[m[1]]
 		}
 		if (typeof cell === "number") {
