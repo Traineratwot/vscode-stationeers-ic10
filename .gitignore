@@ -2,4 +2,7 @@ node_modules
 *.vsix
 1.md
 .idea
+*.js.map
+tools\interpreter\interpreter.js
 package-lock.json
+tools/interpreter/interpreter.js
